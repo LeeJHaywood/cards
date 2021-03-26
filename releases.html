@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <title>Playing card steganography</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link href="favicon.ico" rel="icon" type="image/x-icon">
+  <style type="text/css">
+    h3 {
+        color: #1560BD;
+    }
+    p {
+        padding-left: 24px;
+        font-size: large;
+    }
+    ul {
+        padding-left: 64px;
+    }
+    li {
+        font-size: large;
+    }
+    #iMain a {
+        text-decoration: none;
+        border-bottom: 1px dotted #8080FF;
+    }
+    a:hover {
+        text-decoration: none;
+        border-bottom: 1px solid blue;
+    }
+  </style>
+ </head>
+ <body style="font-family:Verdana;background-color:white">
+  <div id="iMain" style="width:80%;margin-left:auto;margin-right:auto">
+   <h3>Release history</h3>
+   <p>
+    <br><b>v3.2 &nbsp; 13 Jun 2018</b>
+   </p>
+   <ul>
+    <li>
+     Added missing check to decoder tab to ignore user selections of
+     placeholder images.
+    </li>
+   </ul>
+   <p>
+    <br><b>v3.1 &nbsp; 12 Jun 2018</b>
+   </p>
+   <ul>
+    <li>
+     Amended image pre-loading, which had been preventing selection of cards in
+     the decoder tab.
+    </li>
+   </ul>
+   <p>
+    <br><b>v3.0 &nbsp; 7 May 2018</b>
+   </p>
+   <ul>
+    <li>
+     Added bit-level encryption of message to correct flaw when both sides are
+     being used, with automatic detection by decoder.
+    </li>
+    <li>Added proper detection of zero bytes with smarter escaping.</li>
+    <li>Improved performance by detecting when input stops changing.</li>
+    <li>
+     Improved detection of messages that are too long by adding an explicit
+     length check.
+    </li>
+    <li>
+     Added link/QR code processing in downloadable version.&nbsp; Links still
+     relate to leehaywood.org rather than the new server.
+    </li>
+    <li>Added this release history/download page.</li>
+   </ul>
+   <p>
+    <br><b>v2.2 &nbsp; 1 Apr 2018</b>
+   </p>
+   <ul>
+    <li>
+     Added alert box warning about known flaw when use of both sides is first
+     selected.
+    </li>
+    <li>Removed download link from the downloaded archive itself.</li>
+   </ul>
+   <p>
+    <br><b>v2.1 &nbsp; 27 Mar 2018</b>
+   </p>
+   <ul>
+    <li>Added trivial escaping of messages ending with 'su'.</li>
+    <li>
+     Added checkbox to reveal numeric encodings at bottom of page, with an
+     alert box warning not to share the values.
+    </li>
+    <li>
+     Added list of known issues to technical page.
+    </li>
+   </ul>
+   <p><br><b>v2.0 &nbsp; 23 Mar 2018</b></p>
+   <ul>
+    <li>
+     Added link/QR code tab.&nbsp; Please note that this functionality was
+     <span style="text-decoration:underline">not</span> included in the
+     downloadable version until version 3.0.
+    </li>
+   </ul>
+   <p>
+    <br><b>v1.0 &nbsp; 4 Oct 2014</b>
+   </p>
+   <ul>
+    <li>Original version.</li>
+   </ul>
+   <br><hr>
+  </div>
+ </body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <title>Playing card steganography</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link href="favicon.ico" rel="icon" type="image/x-icon">
+  <style type="text/css">
+    h3 {
+        color: #1560BD;
+    }
+    p {
+        padding-left: 24px;
+    }
+    ul {
+        padding-left: 64px;
+    }
+    #iMain a {
+        text-decoration: none;
+        border-bottom: 1px dotted #8080FF;
+    }
+    a:hover {
+        text-decoration: none;
+        border-bottom: 1px solid blue;
+    }
+  </style>
+ </head>
+ <body style="font-family:Verdana;background-color:white">
+  <div id="iMain" style="width:80%;margin-left:auto;margin-right:auto">
+   <h3>Introduction</h3>
+   <p>
+    This is a technical document outlining the methods used to encode and
+    secure messages using a standard pack of playing cards.
+   </p>
+   <p>
+    Messages are encoded and decoded using JavaScript in the web browser.&nbsp;
+    Neither passwords nor messages are transmitted from the computer on which
+    the page is loaded.&nbsp; Use of the page is not logged by the author,
+    although the company hosting the web site may record visitor
+    information.&nbsp; Encoding messages in a pack of playing cards provides
+    <a href="http://en.wikipedia.org/wiki/Plausible_deniability#Use_in_cryptography"
+       title="Plausible deniability" target="_blank">plausible deniability</a>,
+    provided that you always use a password and use your web browser's
+    incognito / private browsing mode to avoid having these web pages in your
+    browsing history.&nbsp; Note that hiding the introduction creates a
+    <a href="http://en.wikipedia.org/wiki/HTTP_cookie"
+       title="HTTP cookie" target="_blank">cookie</a>.
+   </p>
+   <p>
+    Every message that is encoded is checked against the decoder, so you can be
+    confident that the recipient will be able to decode the message from the
+    cards that are displayed.
+   </p>
+   <p>
+    Card images are pre-loaded when the page loads, but it is still possible
+    for there to be a delay when the cards are re-displayed as you type.&nbsp;
+    To ensure that only an up-to-date selection is used, the cards are hidden
+    and a pink background is shown whenever an image is being reloaded.&nbsp;
+    Therefore, it should be apparent to you when the correct sequence has been
+    fully displayed.
+   </p>
+   <h3>Password processing</h3>
+   <ul>
+    <li>
+     In all cases, hashes based on the password are used to re-order the cards
+     before assigning numbers to them.
+    </li>
+    <li>
+     When using both sides of the cards, bit-level encryption is applied to the
+     whole message before it is converted to a sequence of cards (see below).
+    </li>
+   </ul>
+   <p>
+    Short messages could conceivably expose information about the password, as
+    unused cards would be essentially the same for each short message.&nbsp; To
+    counter this, the cards are re-arranged after each card that is selected
+    when encoding the message.
+   </p>
+   <p>
+    Passwords are
+    <a href="http://en.wikipedia.org/wiki/Salt_(cryptography)"
+       title="Cryptographic salt" target="_blank">salted</a> and
+    <a href="http://en.wikipedia.org/wiki/Key_stretching"
+       title="Key stretching" target="_blank">key strengthening</a> is applied
+    using the
+    <a href="http://en.wikipedia.org/wiki/SHA-2" title="SHA-2 set"
+       target="_blank">SHA-256</a> algorithm.&nbsp; SHA-256 has about
+    <a href="http://www.wolframalpha.com/input/?i=%282%5E256%29%2F%2852%21%29"
+       title="(2^256)/(52!)" target="_blank">1,435 million</a> times more
+    combinations than a pack of playing cards, so every password should
+    correspond to a unique shuffle of the pack.
+   </p>
+   <h3>Encoding process</h3>
+   <blockquote>
+    See: <a href="mega-int.js">Large integer library</a>
+    (JavaScript)&nbsp;&ndash; simple alternative to BigInt
+   </blockquote>
+   <p>
+    Each message is converted into a single, large integer by successively
+    multiplying by 256 and then adding each byte value.&nbsp; Encoding part of
+    the result with the first playing card simply involves dividing this number
+    by 52 (or 104 if using both sides) and taking the remainder.&nbsp; The left
+    over part of the number is divided by the consecutively smaller number of
+    available cards&nbsp;&ndash; e.g. from 51 down to 1&nbsp;&ndash; until
+    either a zero result is reached or all cards have been used.
+   </p>
+   <p>
+    When the checkbox is ticked to indicate that all cards should be used, any
+    left over cards are used to encode zeros.
+   </p>
+   <h3>Encoding using one side</h3>
+   <p>
+    When all cards are required to be the same way up, as a pack of playing
+    cards normally would be, the number of combinations is equivalent to
+    225 bits of information.
+   </p>
+   <p>
+    This corresponds to <b>28</b> 8-bit bytes with <b>one spare bit</b>.
+   </p>
+   <ul>
+    <li>
+     The spare bit is used to indicate if both sides are being used or not, so
+     is always zero (0) in this case.
+    </li>
+    <li>
+     Text is always compressed using pair compression (see below).
+    </li>
+   </ul>
+   <h3>Encoding using both sides</h3>
+   <p>
+    When cards are allowed to be either face up or face down, to provide 52
+    bits of extra information, the number of combinations is equivalent to 277
+    bits of information.
+   </p>
+   <p>
+    This corresponds to <b>34</b> 8-bit bytes with an extra <b>5 bits</b> that
+    are used as follows.
+   </p>
+   <ul>
+    <li>
+     The lowest bit is used to indicate if both sides are being used or not, so
+     is always one (1) in this case.
+    </li>
+    <li>
+     The second lowest bit is used to indicate if all cards are to be flipped,
+     which happens to ensure that no more than half of all cards are flipped
+     for any given result&nbsp;&ndash; saving the user effort.&nbsp; Since the
+     range of values encoded by the first card (either 52 or 104 possibilities)
+     is divisible by 4, this bit can be checked before trying to decide if the
+     the whole pack is expected to be flipped or not.
+    </li>
+    <li>
+     The third lowest bit is used to indicate if pair compression has been
+     used.&nbsp; For some messages, pair compression incurs a penalty because
+     (non-ASCII) Unicode characters/sequences have to be escaped (see below).
+    </li>
+    <li>
+     The fourth lowest bit is used to indicate if UTF-8 encoding has been used
+     rather than Unicode (the shortest is used, if either is more efficient
+     than pair compression for a given message).
+    </li>
+    <li>
+     The fifth bit is always set by the current encoder to indicate that
+     bit-level encryption has been used (see known issues, below).
+    </li>
+   </ul>
+   <p>
+    There are 3 possible encoding methods, indicated by the third/fourth bits
+    described above.
+   </p>
+   <ul>
+    <li>Pair compression with escaped 2-byte Unicode characters</li>
+    <li>Uncompressed 2-byte Unicode characters</li>
+    <li>Uncompressed UTF-8 sequences (i.e. multi-byte characters)</li>
+   </ul>
+   <p>
+    Unicode characters that fall outside of the
+    <a href="http://en.wikipedia.org/wiki/Plane_%28Unicode%29"
+       title="Unicode planes" target="_blank">Basic Multilingual Plane</a>
+    (BMP), e.g. the U+1D306 tetragram for centre (&#119558;),
+    are supported indirectly.&nbsp; The web browser typically treats them as a
+    pair of 2-byte Unicode characters (a surrogate pair) and the
+    encoder/decoder handles them the same as any pair of Unicode characters.
+   </p>
+   <p>
+    Even though the encoding gives a different result when the user indicates
+    that both sides are to be used, it is possible&nbsp;&ndash; especially for
+    short messages&nbsp;&ndash; that the selection given by the encoder will
+    result in all cards being face up by chance.&nbsp; The second bit,
+    described above, ensures that the decoder knows which scheme was used.
+   </p>
+   <p>
+    Bit-level encryption is applied to the message before it is encoded
+    (see below).&nbsp; In addition, the cards themselves are re-arranged prior
+    to the encrypted message being assigned to them.
+   </p>
+   <h3>Pair compression</h3>
+   <blockquote>
+    See: <a href="pair-compress.js">Pair compression library</a>
+    (JavaScript)&nbsp;&ndash; alternative to Smaz
+   </blockquote>
+   <p>
+    By default, the pair compression algorithm expects "printable"
+    <a href="http://en.wikipedia.org/wiki/ASCII"
+       title="ASCII character encoding scheme" target="_blank">ASCII</a>
+    characters (byte codes 32 to 126) to make up most of the message, which
+    works very well for short messages in English (better than Smaz for most
+    regular text) and with some success for other Western European
+    languages.&nbsp; If not compressed, normal ASCII values are used.
+   </p>
+   <p>
+    159 codes are used to represent common pairs of English characters, using
+    byte values from 0-31 and 128-254 - for example, 177 is used to represent
+    the common pair of letters &quot;<tt>th</tt>&quot;.
+   </p>
+   <p>
+    A single non-ASCII character is escaped using a byte value of 127 followed
+    by the Unicode value as 2 bytes.&nbsp; Multiple non-ASCII characters are
+    escaped with a byte value of 255, followed a byte representing the number
+    of characters (the count minus one) and then each of the 2-byte Unicode
+    characters.&nbsp; Less common ASCII control codes&nbsp;&ndash; for tabs,
+    line feeds, etc.&nbsp;&ndash; are treated as Unicode byte pairs.
+   </p>
+   <p>
+    The dictionary of pairs was created by checking the frequencies of
+    character pairs found in sample text from a selection of short stories and
+    a set of SMS text messages.&nbsp; The pair frequencies were ranked from
+    each source and the ranks combined to find those common to both types of
+    text.
+   </p>
+   <h3>Bit-level encryption</h3>
+   <p>
+    When both sides of the cards are used, the message is split into individual
+    binary digits (bits) and these are encrypted.&nbsp; For each of 3 rounds
+    of encryption, the bits are psudo-randomly
+    <a href="https://en.wikipedia.org/wiki/Substitution_cipher"
+       title="Substitution_cipher" target="_blank">flipped</a> and 
+    <a href="https://en.wikipedia.org/wiki/Substitution-permutation_network"
+       target="_blank">rearranged</a> using a sequence of hashes based on the
+    password.
+   </p>
+   <p>
+    This is not necessary when only one side of the cards is used.&nbsp;
+    Bit-level encryption was introduced to address a flaw in the original
+    application (see known issues, below).
+   </p>
+   <h3>Known issues</h3>
+   <ul>
+    <li>
+     <b>Resolved</b>:
+     The original version of this application displayed numeric values at the
+     bottom of the page which directly correspond to the original message, i.e.
+     before the password is applied, but this was not clear to the user.&nbsp;
+     These values are now hidden by default&nbsp;&ndash; a checkbox can be used
+     to reveal them, in which case a warning is given.<br>&nbsp;
+    </li>
+    <li>
+     <b>Resolved</b>:
+     The original version of this application did not handle some messages that
+     ended with 'su', which is encoded as a zero value by pair
+     compression.&nbsp; The encoder has been amended to remove all trailing
+     spaces but will then add a single space to any message ending with 'su',
+     which is then removed by the decoder.<br>&nbsp;
+    </li>
+    <li>
+     <b>Resolved</b>:
+     The original version of this application leaked a small amount of
+     information about the message when both sides of the cards were used.&nbsp;
+     Changing the password resulted in a different sequence of cards as
+     expected&nbsp;&ndash; however, the individual cards that were
+     flipped&nbsp;/ not flipped remained the same.&nbsp; In other words, which
+     cards were flipped depended solely on the original message and not the
+     password.&nbsp; The current encoder encrypts the message itself when both
+     sides are used and the updated decoder automatically detects which version
+     of the encoder was used.
+    </li>
+   </ul>
+   <hr>
+  </div>
+ </body>
+</html>
